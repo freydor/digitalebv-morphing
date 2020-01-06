@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1023</width>
-    <height>888</height>
+    <width>1040</width>
+    <height>707</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <x>0</x>
       <y>0</y>
       <width>1021</width>
-      <height>821</height>
+      <height>651</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -28,7 +28,7 @@
       <number>10</number>
      </property>
      <property name="topMargin">
-      <number>10</number>
+      <number>0</number>
      </property>
      <property name="bottomMargin">
       <number>10</number>
@@ -36,7 +36,7 @@
      <item>
       <layout class="QGridLayout" name="gridLayout">
        <property name="topMargin">
-        <number>10</number>
+        <number>0</number>
        </property>
        <property name="bottomMargin">
         <number>5</number>
@@ -73,36 +73,10 @@
              </property>
             </widget>
            </item>
-           <item>
-            <widget class="QPushButton" name="btnBbox1">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>BBox</string>
-             </property>
-            </widget>
-           </item>
           </layout>
          </item>
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_4">
-           <item>
-            <widget class="QPushButton" name="btnSetPointPic1">
-             <property name="maximumSize">
-              <size>
-               <width>150</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Clear Points</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QPushButton" name="btnTri1">
              <property name="sizePolicy">
@@ -120,51 +94,66 @@
          </item>
         </layout>
        </item>
-       <item row="1" column="5">
+       <item row="1" column="4">
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
-          <widget class="QPushButton" name="btnLoadImage2">
-           <property name="maximumSize">
-            <size>
-             <width>120</width>
-             <height>37</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Load Image </string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <item>
+              <widget class="QPushButton" name="btnLoadImage2">
+               <property name="maximumSize">
+                <size>
+                 <width>120</width>
+                 <height>37</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Load Image</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
          </item>
          <item>
-          <widget class="QPushButton" name="btnSetPointPic2">
-           <property name="maximumSize">
-            <size>
-             <width>150</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Clear Points</string>
-           </property>
-          </widget>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <item>
+            <widget class="QPushButton" name="pushButton_3">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Triangulate</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
        <item row="1" column="1">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+        <widget class="QPushButton" name="btnWarp">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
+         <property name="minimumSize">
           <size>
-           <width>10</width>
-           <height>10</height>
+           <width>100</width>
+           <height>0</height>
           </size>
          </property>
-        </spacer>
+         <property name="text">
+          <string>Warp</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -178,6 +167,12 @@
            <height>0</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>506</width>
+           <height>280</height>
+          </size>
+         </property>
          <property name="mouseTracking">
           <bool>true</bool>
          </property>
@@ -185,10 +180,22 @@
        </item>
        <item>
         <widget class="QWidget" name="plot2" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
            <width>400</width>
            <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>505</width>
+           <height>280</height>
           </size>
          </property>
          <property name="mouseTracking">
@@ -199,149 +206,28 @@
       </layout>
      </item>
      <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QWidget" name="plot3" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Minimum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
+       <property name="minimumSize">
         <size>
-         <width>0</width>
-         <height>0</height>
+         <width>1019</width>
+         <height>200</height>
         </size>
        </property>
-      </spacer>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <property name="rightMargin">
-        <number>10</number>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>200</height>
+        </size>
        </property>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QOpenGLWidget" name="openGLWidget_3">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>200</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="groupBox_2">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>100</height>
-            </size>
-           </property>
-           <property name="title">
-            <string>GroupBox</string>
-           </property>
-           <widget class="QSlider" name="horizontalSlider">
-            <property name="geometry">
-             <rect>
-              <x>80</x>
-              <y>30</y>
-              <width>841</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>400</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="pushButton">
-            <property name="geometry">
-             <rect>
-              <x>120</x>
-              <y>60</y>
-              <width>116</width>
-              <height>37</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="groupBox">
-       <property name="title">
-        <string>GroupBox</string>
+       <property name="mouseTracking">
+        <bool>true</bool>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QPushButton" name="btnCalc">
-          <property name="text">
-           <string>Calc</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Scale</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="scal"/>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Rot</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="rot"/>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Trans</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="trans"/>
-        </item>
-       </layout>
       </widget>
      </item>
     </layout>
@@ -352,8 +238,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1023</width>
-     <height>34</height>
+     <width>1040</width>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

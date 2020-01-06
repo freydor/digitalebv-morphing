@@ -6,87 +6,204 @@ import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 from scipy import ndimage
 from scipy import misc
+import scipy.spatial as spatial
 
-fig = plt.figure(tight_layout=True)
-Path = mpath.Path
-gs = gridspec.GridSpec(3, 2)
+class warp():
+    result_pic = []
+    boundingbox = []
 
+    def __init__(self,points,filename):
+        self.points = points
+        self.offset = 20
+        self.loadimage(filename)
+        self.bbox()
 
-class FacePair():
-    hpoints = {
-        "heyes" : [
-            (302,192),
-            (88,4),
-        ],
-        "hnose" : [
-            (342,194),
-            (-3,73),
-        ]}
-    meyes = [
-        (310,235),
-        (107,10)
-    ]
-    mnose = [
-        (370,237),
-        (2,70)
-    ]
-    def loadimage(imagefile):
-        pic = Image.open(imagefile)
-        pix = np.array(pic)
-        return pix
+    def loadimage(self,imagefile):
+        self.pic = Image.open(imagefile)
+        self.pic = np.array(self.pic)
+        self.size = self.pic.shape[:2]
 
-def setplot(pix1,pix2):
-
-    ax1 = fig.add_subplot(gs[0, 0])
-    ax2 = fig.add_subplot(gs[0, 1])
-    ax1.imshow(pix1)
-    ax1.set_title("horst")
-    ax1.arrow(heyes[0][0],heyes[0][1],heyes[1][0],heyes[1][1], head_width=5.5, head_length=5.1, fc='k', ec='k')
-    ax1.arrow(hnose[0][0],hnose[0][1],hnose[1][0],hnose[1][1],head_length=5.1, fc='k', ec='k')
-    ax2.imshow(pix2)
-    ax2.set_title("merkel")
-    ax2.arrow(meyes[0][0],meyes[0][1],meyes[1][0],meyes[1][1], head_width=5.5, head_length=5.1, fc='k', ec='k')
-    ax2.arrow(mnose[0][0],mnose[0][1],mnose[1][0],mnose[1][1], head_width=5.5, head_length=5.1, fc='k', ec='k')
-
-def scalediff(vec1, vec2,ax):
-    length1 = np.sqrt(np.power(vec1[1][0],2) + np.power(vec1[1][1],2))
-    length2 = np.sqrt(np.power(vec2[1][0],2) + np.power(vec2[1][1],2))
-    ratio = length1/length2
-    nlength1 = (vec1[1][0]/length1, vec1[1][1]/length1)
-    nlength2 = (vec2[1][0]/length2, vec2[1][1]/length2)
-    ax.plot([0,nlength1[0]],[0,nlength1[1]], '-x',label="Horst")
-    ax.plot([0,nlength2[1]],[0,nlength2[1]], '-o',label="Merkel")
-    ax.legend()
-    theta1 = np.arccos(nlength1[0])
-    theta2 = np.arccos(nlength2[0])
-    print("Normvektor 1: {} Vektor: {} Winkel (rad): {} \nNormvektor 2: {} Vektor: {} Winkel: {} \nVerhältnis: {} Winkel: {} ".format(nlength1,vec1[1], theta1 ,nlength2,vec2[1], theta2 , ratio , theta1-theta2) )
-    return (ratio,theta1-theta2)
-
-def rotate(img,theta):
-    #c, s = np.cos(theta), np.sin(theta)
-    #R = np.array(((c,-s),(s,c)))
-
-    theta = np.pi/6
-    matrot = [
-        [np.cos(theta),-np.sin(theta),0],
-        [np.sin(theta),np.cos(theta),0],
-        [0,0,1],
-    ]
-    return np.matmul(R,img)
+    def updatePoints(self, points):
+        self.points = points
+        self.bbox()
 
 
-horst = loadimage("Horst-Seehofer.jpg")
-merkel = loadimage('angela-merkel.jpg')
-bhorst = horst.copy()
-setplot(bhorst,merkel)
-print("Skalierung Augenabstand hort->merkel")
-ax1 = fig.add_subplot(gs[1, 0])
-ax1.set_title("Augenabstand")
-rotscale = scalediff(heyes,meyes,ax1)
+    def bbox(self):
+        xmin = self.points[0][0]
+        xmax = self.points[0][0]
+        ymin = self.points[0][1]
+        ymax = self.points[0][1]
+        xsum = 0
+        ysum = 0
+        points = self.points
+        for point in points:
+                xsum = xsum + point[0]
+                ysum = ysum + point[1]
+                if xmin > point[0]:
+                        xmin = point[0]
+                elif xmax < point[0]:
+                        xmax = point[0]
+                if ymin > point[1]:
+                        ymin = point[1]
+                elif ymax < point[1]:
+                        ymax = point[1]
 
-print("Skalierung der Nase hort->merkel")
-ax2 = fig.add_subplot(gs[1, 1])
-ax2.set_title("Nase")
-scalediff(hnose,mnose,ax2)
+        xmin = xmin - self.offset
+        ymin = ymin - self.offset
+        xmax = xmax + self.offset
+        ymax = ymax + self.offset
 
-plt.show()
+        self.grid = np.asarray([(x, y) for y in range(int(0),int(self.size[1]-1))
+                                for x in range(int(0),int(self.size[0]-1))], np.int32)
+        print("Grid size: {} ".format(self.size))
+        self.bbox_size = [xmax-xmin, ymax-ymin]
+        self.center = [xmin + self.bbox_size[0]/2, ymin + self.bbox_size[1]/2,'y']
+        self.cog = [xsum/len(points),ysum/len(points),'o']
+        self.boundingbox = [[xmin,ymin,'b'],[xmax,ymin,'b'],[xmax,ymax,'b'],[xmin,ymax,'b']]
+        return self.boundingbox
+
+    def scale(self,w,h):
+        w_ratio = w/self.size[0]
+        h_ratio = h/self.size[1]
+        if w_ratio > h_ratio :
+            return w_ratio
+        else:
+            return h_ratio
+
+    def biinterpolate(self,img,point):
+            int_coords = np.int32(point)
+            y, x = int_coords
+            dx, dy = point - int_coords
+            q11 = img[y, x]
+            q21 = img[y, x+1]
+            q12 = img[y+1, x]
+            q22 = img[y+1, x+1]
+            btm = q21.T * dx + q11.T * (1 - dx)
+            top = q22.T * dx + q12.T * (1 - dx)
+            inter_pixel = top * dy + btm * (1 - dy)
+            return inter_pixel.T
+
+    def warping(self,triangles,o_warper,delaunay,result,oresult):
+        grid = o_warper.grid
+        print(grid)
+        tri_index = delaunay.find_simplex(o_warper.grid)
+        for simplex in range(len(delaunay.simplices)):
+            pos = grid[tri_index == simplex]
+            out_coords = np.dot(triangles[simplex],
+                                np.vstack((pos.T, np.ones(len(pos)))))
+            x, y = pos.T
+            #print("pos: {},out: {},".format(len(x),len(y)))
+            result[x,y] = np.ndarray.copy(self.biinterpolate(self.pic, out_coords))
+            oresult[x,y] = np.ndarray.copy(self.biinterpolate(o_warper.pic, out_coords))
+
+    def triangle_matrix(self,vert,s_points,d_points):
+            ones = [1, 1, 1]
+            for tri_indices in vert:
+                    src_tri = np.vstack((s_points[tri_indices, :].T, ones))
+                    dst_tri = np.vstack((d_points[tri_indices, :].T, ones))
+                    mat = np.dot(src_tri, np.linalg.inv(dst_tri))[:2, :]
+                    yield mat
+
+    def getPoints(self,points):
+        res = []
+        for point in points:
+            res.append([point[0],point[1]])
+        return res
+
+    def allPoints(self):
+        res = []
+        for point in self.points:
+            res.append([point[1],point[0]])
+        res.append([self.cog[1],self.cog[0]])
+        for point in self.boundingbox:
+            res.append([point[1],point[0]])
+        res.append([0,0])
+        res.append([self.size[0]-2,0])
+        res.append([self.size[0]-2,self.size[1]-2])
+        res.append([0,self.size[1]-2])
+        return res
+
+    def warp_steps(self,steps,o_warper):
+        spoints = self.allPoints()
+        dpoints = o_warper.allPoints()
+        res = []
+        points_step = []
+        for point in zip(spoints,dpoints):
+            line = [point[0]]
+            x = (point[1][0] - point[0][0])/steps
+            y = (point[1][1] - point[0][1])/steps
+            line.append([x,y])
+            res.append(line)
+        return res
+
+    def warp_sequence(self,o_warper,steps,dtype=np.uint8):
+        points = self.warp_steps(steps,o_warper)
+        with open("testwarp1.npz","w+b") as file:
+            np.savez(file,self.points,o_warper.points)
+        images = []
+        for i in range(0,steps):
+            spoints = []
+            dpoints = []
+            num_chans = 3
+            result_img = np.zeros((self.pic.shape[0],self.pic.shape[1], num_chans), dtype)
+            oresult_img = np.zeros((self.pic.shape[0],self.pic.shape[1], num_chans), dtype)
+            for point in points:
+                print(point)
+                dpoints.append([point[0][0] + (i+1)*point[1][0],point[0][1] + (i+1)*point[1][1]])
+                spoints.append([point[0][0] + i*point[1][0],point[0][1] + i*point[1][1]])
+            dpoints = np.array(dpoints)
+            spoints = np.array(spoints)
+            delaunay = spatial.Delaunay(dpoints)
+            print("Line: {} -> {}".format(dpoints,delaunay.simplices))
+            triangles = np.asarray(list(self.triangle_matrix(
+                delaunay.simplices, spoints , dpoints)))
+            dfig = spatial.delaunay_plot_2d(delaunay)
+            self.warping( triangles, o_warper, delaunay,result_img,oresult_img)
+            images.extend([oresult_img,result_img])
+        return images
+
+    def warp_img(self,o_warper, dtype=np.uint8):
+        num_chans = 3
+        #src_img = src_img[:, :, :3]
+        #rows, cols = dest_shape[:2]
+        result_img = np.zeros((self.pic.shape[0],self.pic.shape[1], num_chans), dtype)
+        dpoints = np.array(o_warper.allPoints())
+        spoints = np.array(self.allPoints())
+        delaunay = spatial.Delaunay(dpoints)
+        triangles = np.asarray(list(self.triangle_matrix(
+            delaunay.simplices, spoints , dpoints)))
+
+        self.warping( triangles, o_warper, delaunay,result_img)
+
+        return result_img
+
+def test():
+    from main import plotting
+    import matplotlib.pyplot as plt
+    import pickle
+    testdata = np.load("testwarp1.npz")
+    plt1 = plotting()
+    plt2 = plotting()
+    plt1.loadImage("angela-merkel.jpg")
+    plt2.loadImage("Horst-Seehofer.jpg")
+    plt1.warper.updatePoints(testdata['arr_0'][ : ,:2].astype(np.float))
+    plt2.warper.updatePoints(testdata['arr_1'][ : ,:2].astype(np.float))
+    pics = plt1.warper.warp_sequence(plt2.warper,3)
+    points =   plt1.warper.warp_steps(3,plt2.warper)
+    for i in range(0,3):
+        spoints = []
+        dpoints = []
+        for point in points:
+            spoints.append([point[0][0] + i*point[1][0],point[0][1] + i*point[1][1]])
+            dpoints.append([point[0][0] + i+1*point[1][0],point[0][1] + i+1*point[1][1]])
+        dpoints = np.array(dpoints)
+        spoints = np.array(spoints)
+        d1 = spatial.Delaunay(dpoints)
+        d2 = spatial.Delaunay(spoints)
+#        dfig = spatial.delaunay_plot_2d(d1)
+#        dfig = spatial.delaunay_plot_2d(d2)
+    plt.show()
+    #for i in range(0,9):
+    #    plt.subplot(3,3,i+1,label=str(i))
+    #    plt.imshow(pics[i])
+

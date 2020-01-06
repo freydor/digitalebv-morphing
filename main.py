@@ -1,10 +1,10 @@
 #!/bin/python
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QStandardItemModel
 from PyQt5.QtCore import QThread
 from Ui_MainWindow import Ui_MainWindow as ui
 import numpy as np
+from morph import warp
 import csv
 import os
 import sys
@@ -23,8 +23,8 @@ from matplotlib import patheffects
 from scipy import ndimage
 from scipy import misc
 
-
 class morphgui(QtWidgets.QMainWindow, ui):
+
     def __init__(self):
         super(morphgui, self).__init__()
         self.setupUi(self)
@@ -37,12 +37,18 @@ class morphgui(QtWidgets.QMainWindow, ui):
         self.plotlayout2 = QtWidgets.QVBoxLayout()
         self.plotlayout2.addWidget(self.plotting2)
         self.plot2.setLayout(self.plotlayout2)
+
+        self.plotting3 = plotframes()
+        self.plotlayout3 = QtWidgets.QVBoxLayout()
+        self.plotlayout3.addWidget(self.plotting3)
+        self.plot3.setLayout(self.plotlayout3)
         self.connectEvents()
 
     def connectEvents(self):
         print("Connecting Events")
         self.loadImage1.triggered.connect(self.loadFileAction)
         self.loadImage2.triggered.connect(self.loadFileAction)
+        self.btnWarp.clicked.connect(self.warpImageAction)
 
     def loadFileAction(self,e):
         sender = self.sender()
@@ -57,17 +63,58 @@ class morphgui(QtWidgets.QMainWindow, ui):
             elif "2" in sender.text():
                 self.plotting2.loadImage(fileName)
 
+    def warpImageAction(self,e):
+        print("Warping!")
+        if not self.plotting1.pic_loaded:
+            print("Picture 1 missing!")
+        elif not self.plotting2.pic_loaded:
+            print("Picture 2 missing!")
+        else:
+#            self.plotting1.warper.warp_steps(10,self.plotting2.warper)
+            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,10)
+
+            self.plotting3.subplot_img(pics,self.plotting2.warper.pic)
+
+
+class plotframes(FigureCanvas):
+    def __init__(self,legend=True, parent=None, width=12, height=5,linewidth=0.50, dpi=100):
+        self.legend= legend
+        self.fig = Figure(figsize=(width, height), dpi=dpi,linewidth=linewidth,tight_layout="True")
+        super(FigureCanvas, self).__init__(self.fig)
+        FigureCanvas.setSizePolicy(self,
+                                   QtWidgets.QSizePolicy.MinimumExpanding,
+                                    QtWidgets.QSizePolicy.MinimumExpanding)
+        FigureCanvas.updateGeometry(self)
+
+        self.sub = self.fig.subplots(1,5,sharey='row')
+        self.setMouseTracking(False)
+
+    def subplot_img(self, pix,pic2):
+#        self.fig.delaxes(self.axes)
+        j = 0
+        l = np.logspace(0,2,len(pix))/len(pix)
+        #print(l)
+        for i in range(1,len(pix),2):
+            img = (1-l[i]) * pix[i] +  l[i] * pix[i-1]
+            fimg = Image.fromarray(img.astype(np.uint8))
+            fimg.save("blended" + str(j) + ".jpg")
+            if j < 4:
+                self.sub[j].imshow(img.astype(np.uint8))
+            j = j + 1
+        self.sub[-1].imshow(pix[-2].astype(np.uint8))
+        self.fig.subplots_adjust(left=0, bottom=0, right=1, top=2,hspace=0,wspace=1)
+        self.draw()
 
 class plotting(FigureCanvas):
-    points = [[400,400,'r'],[550,350,'r'],[400,200,'r'],[350,350,'r']]
-    sel_point = False
-    cur_point = []
-
-    def __init__(self, parent=None, width=7, height=8,linewidth=2.0, dpi=100):
-        self.legend= True
-        self.full = False
-        self.fig = Figure(figsize=(width, height),facecolor="grey", dpi=dpi)
-        super(FigureCanvas, self).__init__(self.fig)
+    def __init__(self,legend=True, parent=None, width=8, height=8,linewidth=2.0, dpi=100):
+        self.points = [[400,400,'r'],[550,350,'r'],[400,200,'r'],[350,350,'r']]
+        self.sel_point = False
+        self.pic_loaded = False
+        self.cur_point = []
+        self.warper = ''
+        self.legend= legend
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        super(plotting, self).__init__(self.fig)
         FigureCanvas.setSizePolicy(self,
                                    QtWidgets.QSizePolicy.MinimumExpanding,
                                     QtWidgets.QSizePolicy.MinimumExpanding)
@@ -76,21 +123,17 @@ class plotting(FigureCanvas):
         self.fig.patch.set_facecolor("grey")
         self.axes = self.fig.add_axes([0.1, 0.1 , 0.8, 0.8 ])
         self.axes.set_facecolor("grey")
-        self.axes.plot(range(1,10),range(1,10))
         self.mpl_connect("button_press_event",self.on_click)
 
     def on_click(self,event):
-        print(event)
         x = event.xdata
         y = event.ydata
-        print("{} {}".format(x,y))
+#        print("Click in {} at point {} {}".format(event,x,y))
         if not self.sel_point:
             i = 0
             ra = 10
             for point in self.points:
                 if point[0]-x  <= ra and point[0]-x >=-ra and point[1]-y <=ra and point[1]-y >=-ra:
-                    print("Point {} selected".format(point))
-                    print(self.points)
                     point[2]='g'
                     self.cur_point = i
                     self.sel_point = True
@@ -98,36 +141,39 @@ class plotting(FigureCanvas):
                 i = i + 1
         elif self.sel_point:
             self.points[self.cur_point] = [x,y,'r']
-            print(self.points)
             self.cur_point = -1
             self.sel_point = False
             self.facePointsSetup()
 
-
-
     def facePointsSetup(self):
+        self.warper.updatePoints(np.copy(np.asarray(self.points)[:,:2].astype(np.float)))
         self.axes.cla()
         self.axes.imshow(self.pic)
         self.draw()
         for point in self.points:
-            self.axes.plot(point[0],point[1], marker='o', markerfacecolor=point[2])
+            self.axes.plot(point[0],point[1], marker='X',markersize=15, markerfacecolor=point[2])
+        for point in self.warper.boundingbox:
+            self.axes.plot(point[0],point[1], marker='P', markerfacecolor=point[2])
+        self.axes.plot(self.warper.cog[0],self.warper.cog[1], marker='^', markerfacecolor=point[2])
+        self.axes.plot(self.warper.center[0],self.warper.center[1], marker='8', markerfacecolor=point[2])
+        self.axes.plot(self.pic.size[0]/2,self.pic.size[1]/2, marker='x', markerfacecolor='b')
         self.draw()
 
-    def loadImage(self,file):
-        self.pic = Image.open(file)
+    def loadImage(self,filename):
+        self.imagefile = filename
+        self.fig.suptitle(os.path.basename(filename) , fontsize=10)
+        self.pic = Image.open(filename)
+        self.pic_loaded = True
+        self.warper = warp(self.points,self.imagefile)
         self.facePointsSetup()
-
-    def mouseMoveEvent(self,e):
-        x = e.x()
-        y = e.y()
-        text = "x: {0},  y: {1}".format(x, y)
-        print(text)
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
     prog = morphgui()
     prog.show()
+
     app.exec_()
+
 
 if __name__ == "__main__":
     sys.exit(main())
