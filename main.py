@@ -77,19 +77,34 @@ class morphgui(QtWidgets.QMainWindow, ui):
         else:
 #            self.plotting1.warper.warp_steps(10,self.plotting2.warper)
             self.plotting2.warper.boundingbox = self.plotting1.warper.boundingbox
-            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,10)
+            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,30)
+            self.exportGIF(pics)
+            self.plotextra(pics)
             self.plotting3.subplot_img(pics,self.plotting2.warper.pic)
             
-    def plotextra(self):
-        fig,ax = plt.subplots(2,10,sharey='row',figsize=(25,5))
+    def exportGIF(self,pics):
+        frames = []
+        
+        for i in range(0,len(pics),2):
+            frames.append(Image.fromarray(pics[i]))
+        for i in range(len(pics) - 1,1,-2):
+            frames.append(Image.fromarray(pics[i]))
+                          
+        frames[0].save('horsti.gif', format='GIF', append_images=frames[1:], save_all=True, duration=200, loop=0)
+            
+            
+    def plotextra(self,pics):
+        fig,ax = plt.subplots(4,10,sharey='row',figsize=(25,5))
         fig.subplots_adjust(left=0.1, bottom=0, right=0.9, top=0.9,hspace=0.01,wspace=0.1)
         print(pics)
         j = 0
         for i in range(0,len(pics),2):
-            ax[0][j].imshow(pics[i])
-            ax[1][j].imshow(pics[i+1])
+            if j < 10:
+                ax[0][j].imshow(pics[i])
+                ax[1][j].imshow(pics[i+1])
+                
+                fig.show()
             j = j +1
-            fig.show()
                 
             
             
