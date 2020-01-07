@@ -74,9 +74,9 @@ class morphgui(QtWidgets.QMainWindow, ui):
         else:
 #            self.plotting1.warper.warp_steps(10,self.plotting2.warper)
             #self.plotting2.warper.boundingbox = self.plotting1.warper.boundingbox
-            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,3)
-            self.exportGIF(pics)
-            self.plotextra(pics)
+            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,10)
+#            self.exportGIF(pics)
+#            self.plotextra(pics)
             self.plotting3.subplot_img(pics,self.plotting2.warper.pic)
 
     def exportGIF(self,pics):
@@ -119,7 +119,7 @@ class plotframes(FigureCanvas):
         l = np.logspace(0,2,len(pix))/len(pix)
         #print(l)
         for i in range(1,len(pix),2):
-            img = 0.5 * pix[i] +  0.5 * pix[ i-1 ]
+            img = (j/10) * pix[i] +  (1-(j/10)) * pix[ i-1 ]
             fimg = Image.fromarray(img.astype(np.uint8))
             fimg.save("out/blended" + str(j) + ".jpg")
             if j < 5:
