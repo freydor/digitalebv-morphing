@@ -117,10 +117,10 @@ class warp():
         res.append([self.cog[1],self.cog[0]])
         for point in self.boundingbox:
             res.append([point[1],point[0]])
-        res.append([0,0])
-        res.append([self.size[0]-2,0])
-        res.append([self.size[0]-2,self.size[1]-2])
-        res.append([0,self.size[1]-2])
+        # res.append([0,0])
+        # res.append([self.size[0]-2,0])
+        # res.append([self.size[0]-2,self.size[1]-2])
+        # res.append([0,self.size[1]-2])
         return res
 
     def warp_steps(self,steps,o_warper):
@@ -145,10 +145,11 @@ class warp():
             spoints = []
             dpoints = []
             num_chans = 3
-            result_img = np.zeros((self.pic.shape[0],self.pic.shape[1], num_chans), dtype)
-            oresult_img = np.zeros((self.pic.shape[0],self.pic.shape[1], num_chans), dtype)
+            #            result_img = np.zeros((self.pic.shape[0],self.pic.shape[1], num_chans), dtype)
+            #            oresult_img = np.zeros((self.pic.shape[0],self.pic.shape[1], num_chans), dtype)
+            result_img = np.copy(self.pic)
+            oresult_img = np.copy(o_warper.pic)
             for point in points:
-                print(point)
                 dpoints.append([point[0][0] + (i+1)*point[1][0],point[0][1] + (i+1)*point[1][1]])
                 spoints.append([point[0][0] + i*point[1][0],point[0][1] + i*point[1][1]])
             dpoints = np.array(dpoints)
@@ -158,7 +159,8 @@ class warp():
             triangles = np.asarray(list(self.triangle_matrix(
                 delaunay.simplices, spoints , dpoints)))
             dfig = spatial.delaunay_plot_2d(delaunay)
-            self.warping( triangles, o_warper, delaunay,result_img,oresult_img)
+            self.warping(triangles, o_warper, delaunay, result_img, oresult_img)
+
             images.extend([oresult_img,result_img])
         return images
 
@@ -178,18 +180,13 @@ class warp():
         return result_img
 
 def test():
-    from main import plotting
     import matplotlib.pyplot as plt
     import pickle
     testdata = np.load("testwarp1.npz")
-    plt1 = plotting()
-    plt2 = plotting()
-    plt1.loadImage("angela-merkel.jpg")
-    plt2.loadImage("Horst-Seehofer.jpg")
-    plt1.warper.updatePoints(testdata['arr_0'][ : ,:2].astype(np.float))
-    plt2.warper.updatePoints(testdata['arr_1'][ : ,:2].astype(np.float))
-    pics = plt1.warper.warp_sequence(plt2.warper,3)
-    points =   plt1.warper.warp_steps(3,plt2.warper)
+    plt1 = warp(testdata['arr_0'][ : ,:2].astype(np.float),"angela-merkel.jpg")
+    plt2 = warp(testdata['arr_1'][ : ,:2].astype(np.float),"Horst-Seehofer.jpg")
+    pics = plt1.warp_sequence(plt2,3)
+    points = plt1.warp_steps(3,plt2)
     for i in range(0,3):
         spoints = []
         dpoints = []
@@ -207,3 +204,4 @@ def test():
     #    plt.subplot(3,3,i+1,label=str(i))
     #    plt.imshow(pics[i])
 
+test()
