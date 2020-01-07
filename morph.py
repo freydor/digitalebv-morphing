@@ -20,8 +20,9 @@ class warp():
 
     def loadimage(self,imagefile):
         self.pic = Image.open(imagefile)
-        self.pic = np.array(self.pic)
+        self.pic = np.array(self.pic,dtype=np.int8)
         self.size = self.pic.shape[:2]
+        self.pic_a = np.dstack((np.copy(self.pic),np.zeros((self.size),dtype=np.uint8) +255))
 
     def updatePoints(self, points):
         self.points = points
@@ -117,11 +118,12 @@ class warp():
         res.append([self.cog[1],self.cog[0]])
         for point in self.boundingbox:
             res.append([point[1],point[0]])
-        res.append([0,0])
-        res.append([self.size[0]-2,0])
-        res.append([self.size[0]-2,self.size[1]-2])
-        res.append([0,self.size[1]-2])
+        #res.append([0,0])
+        #res.append([self.size[0]-2,0])
+        #res.append([self.size[0]-2,self.size[1]-2])
+        #res.append([0,self.size[1]-2])
         return res
+
 
     def warp_steps(self,steps,o_warper):
         spoints = self.allPoints()
@@ -159,7 +161,12 @@ class warp():
                 delaunay.simplices, spoints , dpoints)))
             #dfig = spatial.delaunay_plot_2d(delaunay)
             self.warping( triangles, o_warper, delaunay,result_img,oresult_img)
-            images.extend([oresult_img,result_img])
+            rgba_r = np.copy(np.dstack((result_img,np.zeros((self.size),dtype=np.uint8) +255)))
+            rgba_o = np.copy(np.dstack((oresult_img,np.zeros((self.size),dtype=np.uint8) +255)))
+            mBlack = (rgba_r[:, :, 0:3] == [0,0,0]).all(2)
+            rgba_r[mBlack] = (0,0,0,0)
+            rgba_o[mBlack] = (0,0,0,0)
+            images.extend([rgba_o,rgba_r])
         return images
 
     def warp_img(self,o_warper, dtype=np.uint8):

@@ -10,7 +10,7 @@ import os
 import sys
 import time
 
-from PIL import Image
+from PIL import Image,ImageChops
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.lines as mlines
@@ -42,10 +42,7 @@ class morphgui(QtWidgets.QMainWindow, ui):
         self.plotlayout3 = QtWidgets.QVBoxLayout()
         self.plotlayout3.addWidget(self.plotting3)
         self.plot3.setLayout(self.plotlayout3)
-                
         self.connectEvents()
-        
-        
         self.plotting1.loadImage("angela-merkel.jpg")
         self.plotting2.loadImage("Horst-Seehofer.jpg")
 
@@ -77,22 +74,19 @@ class morphgui(QtWidgets.QMainWindow, ui):
         else:
 #            self.plotting1.warper.warp_steps(10,self.plotting2.warper)
             self.plotting2.warper.boundingbox = self.plotting1.warper.boundingbox
-            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,30)
-            self.exportGIF(pics)
+            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,9)
+            #self.exportGIF(pics)
             self.plotextra(pics)
-            self.plotting3.subplot_img(pics,self.plotting2.warper.pic)
-            
+            #self.plotting3.subplot_img(pics,self.plotting2.warper.pic)
+
     def exportGIF(self,pics):
         frames = []
-        
         for i in range(0,len(pics),2):
             frames.append(Image.fromarray(pics[i]))
         for i in range(len(pics) - 1,1,-2):
             frames.append(Image.fromarray(pics[i]))
-                          
         frames[0].save('horsti.gif', format='GIF', append_images=frames[1:], save_all=True, duration=200, loop=0)
-            
-            
+
     def plotextra(self,pics):
         fig,ax = plt.subplots(4,10,sharey='row',figsize=(25,5))
         fig.subplots_adjust(left=0.1, bottom=0, right=0.9, top=0.9,hspace=0.01,wspace=0.1)
@@ -100,14 +94,15 @@ class morphgui(QtWidgets.QMainWindow, ui):
         j = 0
         for i in range(0,len(pics),2):
             if j < 10:
-                ax[0][j].imshow(pics[i])
-                ax[1][j].imshow(pics[i+1])
-                
+                ax[0][j].imshow(np.copy(pics[i]))
+                ax[1][j].imshow(np.copy(pics[i+1]))
+                img =  Image.fromarray( np.copy(self.plotting1.warper.pic_a.astype(np.uint8)))
+                maske = (j/10)* np.copy(pics[i+1].astype(np.uint8)[:,:,3:4])
+                test = np.copy(np.dstack(((pics[i+1].astype(np.uint8)[:,:,0:3]),maske))).astype(np.uint8)
+                img2 = Image.fromarray(np.copy((pics[i+1].astype(np.uint8))))
+                ax[2][j].imshow(Image.alpha_composite(img,Image.fromarray(test)))
                 fig.show()
             j = j +1
-                
-            
-            
 
 
 class plotframes(FigureCanvas):
@@ -129,9 +124,9 @@ class plotframes(FigureCanvas):
         l = np.logspace(0,2,len(pix))/len(pix)
         #print(l)
         for i in range(1,len(pix),2):
-            img = (1-l[i]) * pix[i] +  l[i] * pix[len(pix) - i-1 ]
+            img = (0.5 * np.copy(pix[i]) +  0.5 * np.copy(pix[len(pix) - i-1 ]))
             fimg = Image.fromarray(img.astype(np.uint8))
-            fimg.save("out/blended" + str(j) + ".jpg")
+            fimg.save("out/blended" + str(j) + ".png")
             if j < 5:
                 self.sub[j].imshow(img.astype(np.uint8))
             j = j + 1
