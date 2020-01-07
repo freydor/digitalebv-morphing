@@ -158,7 +158,7 @@ class warp():
             print("Line: {} -> {}".format(dpoints,delaunay.simplices))
             triangles = np.asarray(list(self.triangle_matrix(
                 delaunay.simplices, spoints , dpoints)))
-            dfig = spatial.delaunay_plot_2d(delaunay)
+            #dfig = spatial.delaunay_plot_2d(delaunay)
             self.warping(triangles, o_warper, delaunay, result_img, oresult_img)
 
             images.extend([oresult_img,result_img])
