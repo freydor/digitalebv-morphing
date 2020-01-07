@@ -122,6 +122,12 @@ class plotframes(FigureCanvas):
             img = (j/10) * pix[i] +  (1-(j/10)) * pix[ i-1 ]
             fimg = Image.fromarray(img.astype(np.uint8))
             fimg.save("out/blended" + str(j) + ".jpg")
+            img_a = pix[i]
+            aimg = Image.fromarray(img_a.astype(np.uint8))
+            aimg.save("out/a_" + str(j) + ".jpg")
+            img_b = pix[ i-1 ]
+            bimg = Image.fromarray(img_b.astype(np.uint8))
+            bimg.save("out/b_" + str(j) + ".jpg")
             if j < 5:
                 self.sub[j].imshow(img.astype(np.uint8))
             j = j + 1

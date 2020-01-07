@@ -84,9 +84,8 @@ class warp():
             inter_pixel = top * dy + btm * (1 - dy)
             return inter_pixel.T
 
-    def warping(self,triangles,o_warper,delaunay,result,oresult):
+    def warping(self,triangles,o_warper,delaunay,result):
         grid = o_warper.grid
-        print(grid)
         tri_index = delaunay.find_simplex(o_warper.grid)
         for simplex in range(len(delaunay.simplices)):
             pos = grid[tri_index == simplex]
@@ -94,8 +93,7 @@ class warp():
                                 np.vstack((pos.T, np.ones(len(pos)))))
             x, y = pos.T
             #print("pos: {},out: {},".format(len(x),len(y)))
-            result[x,y] = np.ndarray.copy(self.biinterpolate(self.pic, out_coords))
-            oresult[x,y] = np.ndarray.copy(self.biinterpolate(o_warper.pic, out_coords))
+            result[x,y] = np.ndarray.copy(self.biinterpolate(o_warper.pic, out_coords))
 
     def triangle_matrix(self,vert,s_points,d_points):
             ones = [1, 1, 1]
@@ -118,10 +116,10 @@ class warp():
         res.append([self.cog[1],self.cog[0]])
         for point in self.boundingbox:
             res.append([point[1],point[0]])
-        # res.append([0,0])
-        # res.append([self.size[0]-2,0])
-        # res.append([self.size[0]-2,self.size[1]-2])
-        # res.append([0,self.size[1]-2])
+        res.append([0,0])
+        res.append([self.size[0]-2,0])
+        res.append([self.size[0]-2,self.size[1]-2])
+        res.append([0,self.size[1]-2])
         return res
 
     def warp_steps(self,steps,o_warper):
@@ -148,20 +146,24 @@ class warp():
             num_chans = 3
             #            result_img = np.zeros((self.pic.shape[0],self.pic.shape[1], num_chans), dtype)
             #            oresult_img = np.zeros((self.pic.shape[0],self.pic.shape[1], num_chans), dtype)
-            result_img = np.copy(self.pic)
-            oresult_img = np.copy(o_warper.pic)
+            result_img = np.copy(o_warper.pic)
+            oresult_img = np.copy(self.pic)
             for point in points:
                 dpoints.append([point[0][0] + (i+1)*point[1][0],point[0][1] + (i+1)*point[1][1]])
                 spoints.append([point[0][0] + i*point[1][0],point[0][1] + i*point[1][1]])
             dpoints = np.array(dpoints)
             spoints = np.array(spoints)
             delaunay = spatial.Delaunay(dpoints)
-            self.delauny.append([spatial.Delaunay(spoints),delaunay])
+            delaunay_s = spatial.Delaunay(dpoints)
+            self.delauny.append([delaunay_s,delaunay])
             print("Line: {} -> {}".format(dpoints,delaunay.simplices))
             triangles = np.asarray(list(self.triangle_matrix(
                 delaunay.simplices, spoints , dpoints)))
-            self.warping(triangles, o_warper, delaunay, result_img, oresult_img)
 
+            trianglesd = np.asarray(list(self.triangle_matrix(
+                delaunay.simplices, dpoints , spoints)))
+            self.warping(trianglesd, o_warper, delaunay, result_img)
+            self.warping(triangles, self, delaunay, oresult_img)
             images.extend([oresult_img,result_img])
         return images
 
