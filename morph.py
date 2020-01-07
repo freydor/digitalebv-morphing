@@ -190,7 +190,7 @@ def test():
     testdata = np.load("testwarp1.npz")
     plt1 = warp(testdata['arr_0'][ : ,:2].astype(np.float),"angela-merkel.jpg")
     plt2 = warp(testdata['arr_1'][ : ,:2].astype(np.float),"Horst-Seehofer.jpg")
-    pics = plt1.warp_sequence(plt2,8)
+    pics = plt1.warp_sequence(plt2,20)
     points = plt1.warp_steps(3,plt2)
 
     # for i in range(0,3):
@@ -209,8 +209,8 @@ def test():
     j = 0
     for tri in plt1.delauny:
         print(tri)
-        spatial.delaunay_plot_2d(tri[0],ax[3][j])
-        spatial.delaunay_plot_2d(tri[1],ax[4][j])
+        if j < 10:
+            spatial.delaunay_plot_2d(tri[1],ax[4][j])
         j = j + 1
     plt.show()
     #for i in range(0,9):
@@ -224,9 +224,11 @@ def plotextra(pics,ax):
             if j < 10:
                 ax[0][j].imshow(np.copy(pics[i]))
                 ax[1][j].imshow(np.copy(pics[i+1]))
-                img = (j/10) *np.copy(pics[i]) + (1-(j/10))* np.copy(pics[i+1])
+                #img = (j/10) *np.copy(pics[i]) + (1-(j/10))* np.copy(pics[i+1])
+                img = np.copy(pics[i])
                 ax[2][j].imshow(img.astype(np.uint8))
             j = j +1
+
 
 if __name__ == "__main__":
     test()
