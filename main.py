@@ -77,7 +77,7 @@ class morphgui(QtWidgets.QMainWindow, ui):
         else:
 #            self.plotting1.warper.warp_steps(10,self.plotting2.warper)
             self.plotting2.warper.boundingbox = self.plotting1.warper.boundingbox
-            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,30)
+            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,3)
             self.exportGIF(pics)
             self.plotextra(pics)
             self.plotting3.subplot_img(pics,self.plotting2.warper.pic)
