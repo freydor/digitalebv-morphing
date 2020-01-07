@@ -159,6 +159,7 @@ class warp():
             triangles = np.asarray(list(self.triangle_matrix(
                 delaunay.simplices, spoints , dpoints)))
             #dfig = spatial.delaunay_plot_2d(delaunay)
+
             self.warping(triangles, o_warper, delaunay, result_img, oresult_img)
 
             images.extend([oresult_img,result_img])
@@ -185,23 +186,38 @@ def test():
     testdata = np.load("testwarp1.npz")
     plt1 = warp(testdata['arr_0'][ : ,:2].astype(np.float),"angela-merkel.jpg")
     plt2 = warp(testdata['arr_1'][ : ,:2].astype(np.float),"Horst-Seehofer.jpg")
-    pics = plt1.warp_sequence(plt2,3)
+    pics = plt1.warp_sequence(plt2,8)
     points = plt1.warp_steps(3,plt2)
-    for i in range(0,3):
-        spoints = []
-        dpoints = []
-        for point in points:
-            spoints.append([point[0][0] + i*point[1][0],point[0][1] + i*point[1][1]])
-            dpoints.append([point[0][0] + i+1*point[1][0],point[0][1] + i+1*point[1][1]])
-        dpoints = np.array(dpoints)
-        spoints = np.array(spoints)
-        d1 = spatial.Delaunay(dpoints)
-        d2 = spatial.Delaunay(spoints)
-#        dfig = spatial.delaunay_plot_2d(d1)
-#        dfig = spatial.delaunay_plot_2d(d2)
+
+    # for i in range(0,3):
+    #     spoints = []
+    #     dpoints = []
+    #     for point in points:
+    #         spoints.append([point[0][0] + i*point[1][0],point[0][1] + i*point[1][1]])
+    #         dpoints.append([point[0][0] + i+1*point[1][0],point[0][1] + i+1*point[1][1]])
+    #     dpoints = np.array(dpoints)
+    #     spoints = np.array(spoints)
+    #     d1 = spatial.Delaunay(dpoints)
+    #     d2 = spatial.Delaunay(spoints)
+    #    dfig = spatial.delaunay_plot_2d(d1)
+    #    dfig = spatial.delaunay_plot_2d(d2)
+    plotextra(pics)
     plt.show()
+
     #for i in range(0,9):
     #    plt.subplot(3,3,i+1,label=str(i))
     #    plt.imshow(pics[i])
 
+def plotextra(pics):
+        fig,ax = plt.subplots(4,10,sharey='row',figsize=(25,5))
+        fig.subplots_adjust(left=0.1, bottom=0, right=0.9, top=0.9,hspace=0.01,wspace=0.1)
+        print(pics)
+        j = 0
+        for i in range(0,len(pics),2):
+            if j < 10:
+                ax[0][j].imshow(np.copy(pics[i]))
+                ax[1][j].imshow(np.copy(pics[i+1]))
+                img = (j/10) *np.copy(pics[i]) + (1-(j/10))* np.copy(pics[i+1])
+                ax[2][j].imshow(img.astype(np.uint8))
+            j = j +1
 test()
