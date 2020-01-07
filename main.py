@@ -42,10 +42,7 @@ class morphgui(QtWidgets.QMainWindow, ui):
         self.plotlayout3 = QtWidgets.QVBoxLayout()
         self.plotlayout3.addWidget(self.plotting3)
         self.plot3.setLayout(self.plotlayout3)
-                
         self.connectEvents()
-        
-        
         self.plotting1.loadImage("angela-merkel.jpg")
         self.plotting2.loadImage("Horst-Seehofer.jpg")
 
@@ -81,18 +78,15 @@ class morphgui(QtWidgets.QMainWindow, ui):
             self.exportGIF(pics)
             self.plotextra(pics)
             self.plotting3.subplot_img(pics,self.plotting2.warper.pic)
-            
+
     def exportGIF(self,pics):
         frames = []
-        
         for i in range(0,len(pics),2):
             frames.append(Image.fromarray(pics[i]))
         for i in range(len(pics) - 1,1,-2):
             frames.append(Image.fromarray(pics[i]))
-                          
         frames[0].save('horsti.gif', format='GIF', append_images=frames[1:], save_all=True, duration=200, loop=0)
-            
-            
+
     def plotextra(self,pics):
         fig,ax = plt.subplots(4,10,sharey='row',figsize=(25,5))
         fig.subplots_adjust(left=0.1, bottom=0, right=0.9, top=0.9,hspace=0.01,wspace=0.1)
@@ -102,12 +96,8 @@ class morphgui(QtWidgets.QMainWindow, ui):
             if j < 10:
                 ax[0][j].imshow(pics[i])
                 ax[1][j].imshow(pics[i+1])
-                
                 fig.show()
             j = j +1
-                
-            
-            
 
 
 class plotframes(FigureCanvas):
@@ -129,7 +119,7 @@ class plotframes(FigureCanvas):
         l = np.logspace(0,2,len(pix))/len(pix)
         #print(l)
         for i in range(1,len(pix),2):
-            img = (1-l[i]) * pix[i] +  l[i] * pix[len(pix) - i-1 ]
+            img = 0.5 * pix[i] +  0.5 * pix[len(pix) - i-1 ]
             fimg = Image.fromarray(img.astype(np.uint8))
             fimg.save("out/blended" + str(j) + ".jpg")
             if j < 5:
@@ -204,9 +194,7 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     prog = morphgui()
     prog.show()
-
     app.exec_()
-
 
 if __name__ == "__main__":
     sys.exit(main())

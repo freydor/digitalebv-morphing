@@ -15,6 +15,7 @@ class warp():
     def __init__(self,points,filename):
         self.points = points
         self.offset = 20
+        self.delauny = []
         self.loadimage(filename)
         self.bbox()
 
@@ -155,11 +156,10 @@ class warp():
             dpoints = np.array(dpoints)
             spoints = np.array(spoints)
             delaunay = spatial.Delaunay(dpoints)
+            self.delauny.append([spatial.Delaunay(spoints),delaunay])
             print("Line: {} -> {}".format(dpoints,delaunay.simplices))
             triangles = np.asarray(list(self.triangle_matrix(
                 delaunay.simplices, spoints , dpoints)))
-            #dfig = spatial.delaunay_plot_2d(delaunay)
-
             self.warping(triangles, o_warper, delaunay, result_img, oresult_img)
 
             images.extend([oresult_img,result_img])
@@ -183,6 +183,8 @@ class warp():
 def test():
     import matplotlib.pyplot as plt
     import pickle
+    fig,ax = plt.subplots(5,10,sharey='row',figsize=(25,5))
+    fig.subplots_adjust(left=0.1, bottom=0, right=0.9, top=0.9,hspace=0.01,wspace=0.1)
     testdata = np.load("testwarp1.npz")
     plt1 = warp(testdata['arr_0'][ : ,:2].astype(np.float),"angela-merkel.jpg")
     plt2 = warp(testdata['arr_1'][ : ,:2].astype(np.float),"Horst-Seehofer.jpg")
@@ -201,16 +203,20 @@ def test():
     #     d2 = spatial.Delaunay(spoints)
     #    dfig = spatial.delaunay_plot_2d(d1)
     #    dfig = spatial.delaunay_plot_2d(d2)
-    plotextra(pics)
+    plotextra(pics,ax)
+    j = 0
+    for tri in plt1.delauny:
+        print(tri)
+        spatial.delaunay_plot_2d(tri[0],ax[3][j])
+        spatial.delaunay_plot_2d(tri[1],ax[4][j])
+        j = j + 1
     plt.show()
 
     #for i in range(0,9):
     #    plt.subplot(3,3,i+1,label=str(i))
     #    plt.imshow(pics[i])
 
-def plotextra(pics):
-        fig,ax = plt.subplots(4,10,sharey='row',figsize=(25,5))
-        fig.subplots_adjust(left=0.1, bottom=0, right=0.9, top=0.9,hspace=0.01,wspace=0.1)
+def plotextra(pics,ax):
         print(pics)
         j = 0
         for i in range(0,len(pics),2):
@@ -220,4 +226,6 @@ def plotextra(pics):
                 img = (j/10) *np.copy(pics[i]) + (1-(j/10))* np.copy(pics[i+1])
                 ax[2][j].imshow(img.astype(np.uint8))
             j = j +1
-test()
+
+if __name__ == "__main__":
+    test()
