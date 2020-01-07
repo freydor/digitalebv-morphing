@@ -211,7 +211,6 @@ def test():
         spatial.delaunay_plot_2d(tri[1],ax[4][j])
         j = j + 1
     plt.show()
-
     #for i in range(0,9):
     #    plt.subplot(3,3,i+1,label=str(i))
     #    plt.imshow(pics[i])
