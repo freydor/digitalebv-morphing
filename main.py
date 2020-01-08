@@ -75,7 +75,7 @@ class morphgui(QtWidgets.QMainWindow, ui):
 #            self.plotting1.warper.warp_steps(10,self.plotting2.warper)
             #self.plotting2.warper.boundingbox = self.plotting1.warper.boundingbox
             pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,10)
-#            self.exportGIF(pics)
+            self.exportGIF(pics)
 #            self.plotextra(pics)
             self.plotting3.subplot_img(pics,self.plotting2.warper.pic)
 
@@ -136,7 +136,7 @@ class plotframes(FigureCanvas):
 
 class plotting(FigureCanvas):
     def __init__(self,legend=True, parent=None, width=8, height=8,linewidth=2.0, dpi=100):
-        self.points = [[400,400,'r'],[550,350,'r'],[400,200,'r'],[350,350,'r']]
+        self.points = [[300,400,'r'],[350,400,'r'],[400,400,'r'],[550,200,'r'],[400,200,'r'],[350,200,'r']]
         self.sel_point = False
         self.pic_loaded = False
         self.cur_point = []
@@ -179,8 +179,11 @@ class plotting(FigureCanvas):
         self.axes.cla()
         self.axes.imshow(self.pic)
         self.draw()
+        i = 1
         for point in self.points:
-            self.axes.plot(point[0],point[1], marker='X',markersize=15, markerfacecolor=point[2])
+            self.axes.plot(point[0],point[1], marker='X',markersize=8, markerfacecolor=point[2])
+            self.axes.annotate(str(i),point[:2])
+            i = i + 1
         for point in self.warper.boundingbox:
             self.axes.plot(point[0],point[1], marker='P', markerfacecolor=point[2])
         self.axes.plot(self.warper.cog[0],self.warper.cog[1], marker='^', markerfacecolor=point[2])
