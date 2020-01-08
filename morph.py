@@ -149,7 +149,7 @@ class warp():
 def test():
     import matplotlib.pyplot as plt
     import pickle
-    fig,ax = plt.subplots(5,10,sharey='row',figsize=(25,5))
+    fig,ax = plt.subplots(4,10,sharey='row',figsize=(25,5))
     fig.subplots_adjust(left=0.1, bottom=0, right=0.9, top=0.9,hspace=0.01,wspace=0.1)
     testdata = np.load("testwarp1.npz")
     plt1 = warp(testdata['arr_0'][ : ,:2].astype(np.float),"angela-merkel.jpg")
@@ -162,7 +162,7 @@ def test():
     for tri in plt1.delauny:
         print(tri)
         if j < 10:
-            spatial.delaunay_plot_2d(tri[1],ax[4][j])
+            spatial.delaunay_plot_2d(tri[1],ax[3][j])
         j = j + 1
     plt.show()
 

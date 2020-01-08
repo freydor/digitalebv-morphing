@@ -83,9 +83,12 @@ class morphgui(QtWidgets.QMainWindow, ui):
         frames = []
         for i in range(0,len(pics),2):
             frames.append(Image.fromarray(pics[i]))
-        for i in range(len(pics) - 1,1,-2):
-            frames.append(Image.fromarray(pics[i]))
-        frames[0].save('horsti.gif', format='GIF', append_images=frames[1:], save_all=True, duration=200, loop=0)
+        for i in range(0,len(pics),2):
+            img = (i/len(pics)) * pics[len(pics)-1] +  (1-(i/len(pics))) * pics[ len(pics)-2 ]
+            frames.append(Image.fromarray(img.astype(np.uint8)))
+        for i in range(1,len(pics),2):
+            frames.append(Image.fromarray(pics[len(pics) - i]))
+        frames[0].save('horsti.gif', format='GIF', append_images=frames[1:], save_all=True, duration=150, loop=0)
 
     def plotextra(self,pics):
         fig,ax = plt.subplots(4,10,sharey='row',figsize=(25,5))
@@ -119,7 +122,7 @@ class plotframes(FigureCanvas):
         l = np.logspace(0,2,len(pix))/len(pix)
         #print(l)
         for i in range(1,len(pix),2):
-            img = (j/10) * pix[i] +  (1-(j/10)) * pix[ i-1 ]
+            img = (j/len(pix)) * pix[i] +  (1-(j/len(pix))) * pix[ i-1 ]
             fimg = Image.fromarray(img.astype(np.uint8))
             fimg.save("out/blended" + str(j) + ".jpg")
             img_a = pix[i]
