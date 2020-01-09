@@ -37,6 +37,7 @@ class morphgui(QtWidgets.QMainWindow, ui):
         self.plotlayout2 = QtWidgets.QVBoxLayout()
         self.plotlayout2.addWidget(self.plotting2)
         self.plot2.setLayout(self.plotlayout2)
+        self.points.setText(str(len(self.plotting2.points)))
 
         self.plotting3 = plotframes()
         self.plotlayout3 = QtWidgets.QVBoxLayout()
@@ -52,6 +53,7 @@ class morphgui(QtWidgets.QMainWindow, ui):
         self.loadImage1.triggered.connect(self.loadFileAction)
         self.loadImage2.triggered.connect(self.loadFileAction)
         self.btnWarp.clicked.connect(self.warpImageAction)
+        self.btnPoints.clicked.connect(self.addPoints)
 
     def loadFileAction(self,e):
         sender = self.sender()
@@ -72,23 +74,38 @@ class morphgui(QtWidgets.QMainWindow, ui):
         elif not self.plotting2.pic_loaded:
             print("Picture 2 missing!")
         else:
-#            self.plotting1.warper.warp_steps(10,self.plotting2.warper)
-            #self.plotting2.warper.boundingbox = self.plotting1.warper.boundingbox
-            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,10)
-            self.exportGIF(pics)
-#            self.plotextra(pics)
+            frames = int(self.frames.text())
+            pics = self.plotting1.warper.warp_sequence(self.plotting2.warper,frames)
+            if self.gifExport.isChecked():
+                filename = self.filenameGif.text()
+                self.exportGIFFile(pics,filename)
             self.plotting3.subplot_img(pics,self.plotting2.warper.pic)
 
-    def exportGIF(self,pics):
+    def exportGIFFile(self,pics,filename):
+        print("Exporting gif")
         frames = []
-        for i in range(0,len(pics),2):
-            frames.append(Image.fromarray(pics[i]))
-        for i in range(0,len(pics),2):
-            img = (i/len(pics)) * pics[len(pics)-1] +  (1-(i/len(pics))) * pics[ len(pics)-2 ]
+        for i in range(1,len(pics)-1,2):
+            img = (i/len(pics)) *np.copy(pics[ len(pics)-i-1 ] ) +  (1-(i/len(pics))) * np.copy(pics[len(pics)-i])
             frames.append(Image.fromarray(img.astype(np.uint8)))
-        for i in range(1,len(pics),2):
-            frames.append(Image.fromarray(pics[len(pics) - i]))
-        frames[0].save('horsti.gif', format='GIF', append_images=frames[1:], save_all=True, duration=150, loop=0)
+        for i in range(1,len(pics)-1,2):
+            img =  (1-(i/len(pics))) * np.copy(pics[ len(pics)-i-1 ] ) + (i/len(pics)) * np.copy(pics[i])
+            frames.append(Image.fromarray(img.astype(np.uint8)))
+        # for i in range(0,len(pics),2):
+        #     img = (i/len(pics)) * pics[len(pics)-1] +  (1-(i/len(pics))) * pics[ len(pics)-2 ]
+        #     frames.append(Image.fromarray(img.astype(np.uint8)))
+        # for i in range(1,len(pics),2):
+        #     frames.append(Image.fromarray(pics[i]))
+        frames[0].save(filename, format='GIF', append_images=frames[1:], save_all=True, duration=150, loop=0)
+
+    def addPoints(self):
+        try:
+            points = int(self.points.text())
+            points = points + 1
+            points = self.plotting1.addPoint(points)
+            self.plotting2.addPoint(points)
+        finally:
+            self.points.setText(str(points))
+
 
     def plotextra(self,pics):
         fig,ax = plt.subplots(4,10,sharey='row',figsize=(25,5))
@@ -139,7 +156,7 @@ class plotframes(FigureCanvas):
 
 class plotting(FigureCanvas):
     def __init__(self,legend=True, parent=None, width=8, height=8,linewidth=2.0, dpi=100):
-        self.points = [[300,400,'r'],[350,400,'r'],[400,400,'r'],[550,200,'r'],[400,200,'r'],[350,200,'r']]
+        self.points = [[300,400,'r'],[350,450,'r'],[400,400,'r'],[500,300,'r'],[400,200,'r'],[350,150,'r'],[300,200,'r'],[200,300,'r']]
         self.sel_point = False
         self.pic_loaded = False
         self.cur_point = []
@@ -160,7 +177,6 @@ class plotting(FigureCanvas):
     def on_click(self,event):
         x = event.xdata
         y = event.ydata
-#        print("Click in {} at point {} {}".format(event,x,y))
         if not self.sel_point:
             i = 0
             ra = 10
@@ -177,11 +193,16 @@ class plotting(FigureCanvas):
             self.sel_point = False
             self.facePointsSetup()
 
+    def addPoint(self,points):
+        newpoint = [self.pic.size[0]/2,self.pic.size[1]/2,'g']
+        self.points.append(newpoint)
+        self.facePointsSetup()
+        return len(self.points)
+
     def facePointsSetup(self):
         self.warper.updatePoints(np.copy(np.asarray(self.points)[:,:2].astype(np.float)))
         self.axes.cla()
         self.axes.imshow(self.pic)
-        self.draw()
         i = 1
         for point in self.points:
             self.axes.plot(point[0],point[1], marker='X',markersize=8, markerfacecolor=point[2])
@@ -190,7 +211,6 @@ class plotting(FigureCanvas):
         for point in self.warper.boundingbox:
             self.axes.plot(point[0],point[1], marker='P', markerfacecolor=point[2])
         self.axes.plot(self.warper.cog[0],self.warper.cog[1], marker='^', markerfacecolor=point[2])
-        self.axes.plot(self.warper.center[0],self.warper.center[1], marker='8', markerfacecolor=point[2])
         self.axes.plot(self.pic.size[0]/2,self.pic.size[1]/2, marker='x', markerfacecolor='b')
         self.draw()
 

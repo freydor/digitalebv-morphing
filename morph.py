@@ -66,7 +66,7 @@ class warp():
         res = []
         for point in self.points:
             res.append([point[1],point[0]])
-        res.append([self.cog[1],self.cog[0]])
+#        res.append([self.cog[1],self.cog[0]])
         for point in self.boundingbox:
             res.append([point[1],point[0]])
         res.extend([[0,0],[self.size[0]-2,0],[self.size[0]-2,self.size[1]-2],[0,self.size[1]-2]])
@@ -92,7 +92,7 @@ class warp():
             out_coords = np.dot(triangles[simplex],
                                 np.vstack((pos.T, np.ones(len(pos)))))
             x, y = pos.T
-            result[x,y] = np.ndarray.copy(self.biinterpolate(img, out_coords))
+            result[x,y] = self.biinterpolate(img, out_coords)
 
     def triangle_matrix(self,vert,s_points,d_points):
             ones = [1, 1, 1]
@@ -120,15 +120,15 @@ class warp():
         with open("testwarp1.npz","w+b") as file:
             np.savez(file,self.points,o_warper.points)
         images = []
-        result_img = np.copy(o_warper.pic)
-        oresult_img = np.copy(self.pic)
         for i in range(0,steps):
             spoints = []
             dpoints = []
             num_chans = 3
+            result_img = np.copy(o_warper.pic)
+            oresult_img = np.copy(self.pic)
             for point in points:
                 dpoints.append([point[0][0] + (i+1)*point[1][0],point[0][1] + (i+1)*point[1][1]])
-                spoints.append([point[0][0] + i*point[1][0],point[0][1] + i*point[1][1]])
+                spoints.append([point[0][0] ,point[0][1] ])
             dpoints = np.array(dpoints)
             spoints = np.array(spoints)
             delaunay = spatial.Delaunay(dpoints)
@@ -139,10 +139,10 @@ class warp():
                 delaunay.simplices, spoints , dpoints)))
 
             trianglesd = np.asarray(list(self.triangle_matrix(
-                delaunay.simplices, dpoints , spoints)))
+                delaunay_s.simplices, dpoints , spoints)))
 
-            self.warping(triangles, self.grid,np.copy(result_img), delaunay, result_img)
-            self.warping(trianglesd,self.grid,np.copy(oresult_img), delaunay, oresult_img)
+            self.warping(trianglesd, self.grid,np.copy(result_img), delaunay_s, result_img)
+            self.warping(triangles,self.grid,np.copy(oresult_img), delaunay, oresult_img)
             images.extend([np.copy(oresult_img),np.copy(result_img)])
         return images
 
@@ -154,7 +154,7 @@ def test():
     testdata = np.load("testwarp1.npz")
     plt1 = warp(testdata['arr_0'][ : ,:2].astype(np.float),"angela-merkel.jpg")
     plt2 = warp(testdata['arr_1'][ : ,:2].astype(np.float),"Horst-Seehofer.jpg")
-    pics = plt1.warp_sequence(plt2,9)
+    pics = plt1.warp_sequence(plt2,6)
     points = plt1.warp_steps(3,plt2)
 
     plotextra(pics,ax)
