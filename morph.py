@@ -134,7 +134,7 @@ class warp():
         4. Für beide Bilder aus Ursprungsbild neues Bild erzeugen
 
         """
-        with open("testwarp1.npz","w+b") as file:
+        with open("testwarp.npz","w+b") as file:
             np.savez(file,self.points,o_warper.points)
 
         points = self.warp_steps(steps,o_warper.allPoints(o_warper.getBoxes()),self.allPoints(self.getBoxes()))
@@ -177,7 +177,7 @@ def test():
     import matplotlib.pyplot as plt
     import pickle
 
-    testdata = np.load("testwarp1.npz")
+    testdata = np.load("testwarp25.npz")
     plt1 = warp(testdata['arr_0'][ : ,:2].astype(np.float),"angela-merkel.jpg")
     plt2 = warp(testdata['arr_1'][ : ,:2].astype(np.float),"Horst-Seehofer.jpg")
 
