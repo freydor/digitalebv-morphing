@@ -1,4 +1,4 @@
-![img](all-1_1.jpg)
+![img](Dokumentation/all-1_1.jpg)
 
 # Gesichter Morphing in Python
 
@@ -30,9 +30,7 @@ python morph.py
 
 Dabei enstehen die folgenden Plots
 
-![img](morphing überblenden.jpg "Überblendung und Morphen der beiden Bilder")
-
-In der zweiten reiehe werden zusätzlich die gewählten Start- und Endpunkte sowie die Triangulierung angezeigt.
+![img](morphing2.png "Überblendung und Morphen der beiden Bilder") In der zweiten reiehe werden zusätzlich die gewählten Start- und Endpunkte sowie die Triangulierung angezeigt.
 
 ![img](delauny.jpg "Triangulierung der Punktmenge mit Delaunay")
 
