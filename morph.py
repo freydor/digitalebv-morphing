@@ -140,11 +140,6 @@ class warp():
         points = self.warp_steps(steps,o_warper.allPoints(o_warper.getBoxes()),self.allPoints(self.getBoxes()))
         step1 = self.warp_points(steps,points,np.copy(self.pic),np.copy(o_warper.pic),list())
 
-        #points2 = self.warp_steps(steps,self.allPoints(self.getBoxes()),o_warper.allPoints(self.pointse[0]))
-        #img1 = step1[1]
-        #img2 = step1[0]
-        #points = self.warp_steps(steps,self.allPoints(self.getBoxes()),o_warper.allPoints(o_warper.getBoxes()))
-        #step2 = self.warp_points(steps,points,np.copy(img1),np.copy(img2),step1)
         return step1
 
     def warp_points(self,steps,points,img1,img2,results):
@@ -177,7 +172,7 @@ def test():
     import matplotlib.pyplot as plt
     import pickle
 
-    testdata = np.load("testwarp25.npz")
+    testdata = np.load("testwarp8.npz")
     plt1 = warp(testdata['arr_0'][ : ,:2].astype(np.float),"angela-merkel.jpg")
     plt2 = warp(testdata['arr_1'][ : ,:2].astype(np.float),"Horst-Seehofer.jpg")
 
@@ -186,11 +181,11 @@ def test():
     plt3 = warp(testdata['arr_0'][ : ,:2].astype(np.float),"angela-merkel.jpg")
     plt4 = warp(testdata['arr_1'][ : ,:2].astype(np.float),"Horst-Seehofer.jpg")
 
-    animation = plt3.warp_sequence(plt4,10)
+    animation = plt3.warp_sequence(plt4,40)
     ani = []
     print(len(animation))
     for i in range(0,len(animation),2):
-        ani.append([np.copy(animation[i]),np.copy(animation[len(animation) - 1 -i ])])
+        ani.append([np.copy(animation[i]),np.copy(animation[i + 1 ])])
 
     exportGIFFile(ani,"animation.gif")
     plotextra(pics,plt1,plt2)
